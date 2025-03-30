@@ -239,8 +239,10 @@
             }
         }
 
+
         window.addEventListener('load', async function () {
-            // Load dữ liệu từ blockchain       
+            // Load dữ liệu từ blockchain
+
             await updateUI(); // Hàm load comment của bạn
             // Ẩn loader sau khi hoàn thành
             document.body.classList.add('loaded');
@@ -399,13 +401,7 @@
             displayPosts(currentPage);
         });
 
-        window.addEventListener('load', async function () {
-            // Load dữ liệu từ blockchain
-
-            await updateUI(); // Hàm load comment của bạn
-            // Ẩn loader sau khi hoàn thành
-            document.body.classList.add('loaded');
-        });
+    
 
 
     </script>
