@@ -57,7 +57,52 @@
             z-index: 10;
             /* Đảm bảo phân trang hiển thị trên các phần khác */
         }
+
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        body.loaded #loader {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
     </style>
+
+    <div id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+
+
 </head>
 
 <body class="font-sans">
@@ -84,12 +129,12 @@
                         About
                     </button>
                 </a>
-                <a href="addpost.html">
+                <!-- <a href="addpost.html">
                     <button
                         class="items-center ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         Add post
                     </button>
-                </a>
+                </a> -->
             </div>
         </div>
     </header>
@@ -193,6 +238,14 @@
                 setupPagination();
             }
         }
+
+        window.addEventListener('load', async function () {
+            // Load dữ liệu từ blockchain       
+            await updateUI(); // Hàm load comment của bạn
+            // Ẩn loader sau khi hoàn thành
+            document.body.classList.add('loaded');
+        });
+
 
         function createPostHTML(cid, title, content, banner, tokenID, timestamp) {
             return `
@@ -300,21 +353,44 @@
         }
 
         // Thêm sự kiện click cho nút nhấn
-        updateUI();
+
 
         // Sự kiện tìm kiếm
         document.getElementById('searchInput').addEventListener('input', function () {
-            const searchTerm = this.value.trim().toLowerCase(); // Lấy giá trị tìm kiếm và chuẩn hóa
-            const posts = document.querySelectorAll('main a'); // Lấy tất cả các bài viết (thẻ <a>)
+            const searchTerm = this.value.trim().toLowerCase();
 
-            posts.forEach(post => {
-                const title = post.querySelector('h2').textContent.toLowerCase(); // Lấy nội dung thẻ h2
-                if (title.includes(searchTerm)) {
-                    post.style.display = 'block'; // Hiển thị bài viết nếu khớp
-                } else {
-                    post.style.display = 'none'; // Ẩn bài viết nếu không khớp
-                }
+            if (searchTerm === '') {
+                // Nếu không có từ khóa tìm kiếm, hiển thị lại bài viết theo trang hiện tại
+                displayPosts(currentPage);
+                return;
+            }
+
+            // Lọc bài viết trong allPosts
+            const filteredPosts = allPosts.filter(post =>
+                post.title.toLowerCase().includes(searchTerm)
+            );
+
+            // Hiển thị kết quả tìm kiếm
+            const postsContainer = document.querySelector('main');
+            postsContainer.innerHTML = '';
+
+            filteredPosts.forEach(post => {
+                const postHTML = createPostHTML(post.cid, post.title, post.content, post.banner, post.tokenID, post.timestamp);
+                postsContainer.innerHTML += postHTML;
             });
+
+            // Ẩn phân trang khi đang tìm kiếm
+            document.getElementById('pagination').display = 'none';
+        });
+
+        // Thêm sự kiện khi xóa hết nội dung tìm kiếm
+        document.getElementById('searchInput').addEventListener('change', function () {
+            if (this.value.trim() === '') {
+                // Hiển thị lại phân trang
+                document.getElementById('pagination').style.display = 'flex';
+                // Hiển thị lại bài viết theo trang hiện tại
+                displayPosts(currentPage);
+            }
         });
 
         // Cập nhật số lượng bài viết hiển thị khi kích thước màn hình thay đổi
@@ -322,6 +398,16 @@
             updatePostsPerPage();
             displayPosts(currentPage);
         });
+
+        window.addEventListener('load', async function () {
+            // Load dữ liệu từ blockchain
+
+            await updateUI(); // Hàm load comment của bạn
+            // Ẩn loader sau khi hoàn thành
+            document.body.classList.add('loaded');
+        });
+
+
     </script>
 </body>
 
