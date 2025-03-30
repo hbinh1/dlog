@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhileCrypto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            /* Đảm bảo nội dung chính chiếm không gian linh hoạt */
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+
+</head>
+
+<body class="font-sans bg-white">
+    <!-- Header -->
+    <a href="index.html">
+        <header class="">
+            <!-- Banner Section -->
+
+            <div class="w-full md:h-1/2 overflow-hidden flex justify-center bg-gray-400">
+                <img src="https://ipfs.io/ipfs/bafkreih7lli74upjmxgqgpiyputdsr7wrlynwbuoisswfszrkggqzzp33e" alt="Banner"
+                    class="w-4/5 md:w-2/5 h-full" />
+            </div>
+
+        </header>
+    </a>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 ">
+
+        <article class="bg-gray-100 p-6 rounded-lg">
+            <!-- Tiêu đề bài viết -->
+            <h2 id="postTitle" class="text-4xl font-bold text-gray-800 text-center"></h2>
+            <p id="timestamp" class="text-gray-600 text-center"></p>
+
+
+
+            <!-- Nội dung bài viết -->
+            <div id="postContent" class="text-gray-700 leading-relaxed justify-center"></div>
+
+        </article>
+        <div class="flex justify-end"> <!-- Thêm div bao bọc và căn phải -->
+            <a href="index.html">
+                <button
+                    class="ml-4 px-4 py-2 bg-gray-50 text-black rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    &larr; Trang chủ
+                </button>
+            </a>
+        </div>
+        <!-- Phần bình luận -->
+        <section class="mt-8 bg-gray-100 rounded-lg">
+            <h3 class="text-2xl font-bold text-gray-800 py-4 text-center">Bình Luận</h3>
+
+            <!-- Form nhập bình luận -->
+            <div class="bg-gray-100 rounded-lg shadow-md p-6">
+                <form id="commentForm" class="space-y-4">
+                    <textarea id="commentInput" placeholder="Viết bình luận của bạn..."
+                        class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="4" required></textarea>
+                    <!-- Nút Gửi Bình Luận -->
+                    <div class="flex justify-center"> <!-- Thêm div bao bọc và căn giữa -->
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            Gửi Bình Luận
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section>
+            <!-- Danh sách bình luận -->
+            <div id="commentList" class="space-y-4">
+                <!-- Bình luận mẫu -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 shadow">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-600">
+                &copy; 2025 While Crypto. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript để lấy và hiển thị dữ liệu -->
+    <script>
+        let contract;
+        let userAccount;
+        const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
+
+
+        // Địa chỉ và ABI của smart contract
+        const contractAddress = "0x6479e4231ED6d7703D2e0afbeF014dfF92B7890E"; // Thay thế bằng địa chỉ hợp đồng của bạn
+        const contractABI = [{
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "tokenID",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "content",
+                    "type": "string"
+                }
+            ],
+            "name": "addComment",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }, {
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }, {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "tokenID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getComments",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "address",
+                            "name": "commenter",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "content",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct MyToken.Comment[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        ];
+
+
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        function executeScripts(html) {
+            const container = document.createElement('div');
+            container.innerHTML = html;
+
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+
+            return container.innerHTML;
+        }
+        // Hàm để lấy query parameters từ URL
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                tokenID: params.get('tokenID'),
+                cid: params.get('cid'),
+                title: decodeURIComponent(params.get('title') || ''),
+                timestamp: params.get('timestamp'),
+            };
+        }
+
+        // Hiển thị dữ liệu trên trang
+        async function displayPostDetails() {
+            const { tokenID, cid, title, timestamp } = getQueryParams();
+            localStorage.setItem("tokenID", tokenID);
+            localStorage.setItem("cid", cid);
+            localStorage.setItem("title", title);
+            localStorage.setItem("timestamp", timestamp);
+            const savedTokenID = localStorage.getItem("tokenID");
+            const savedCID = localStorage.getItem("cid");
+            const savedTitle = localStorage.getItem("title");
+            const savedTimestamp = localStorage.getItem("timestamp");
+
+            // Hiển thị tiêu đề và nội dung
+            document.getElementById('postTitle').textContent = savedTitle;
+            document.getElementById('timestamp').textContent = savedTimestamp;
+
+
+
+            // Nếu cần, bạn có thể fetch thêm dữ liệu từ IPFS dựa trên CID
+            try {
+                const response = await fetch(`https://ipfs.io/ipfs/${savedCID}`);
+                if (!response.ok) {
+                    throw new Error(`Lỗi khi fetch nội dung từ IPFS: ${response.statusText}`);
+                }
+                const encodedHTML = await response.text();
+                const decodedHTML = decodeURIComponent(encodedHTML);
+                const processedHTML = executeScripts(decodedHTML);
+                document.getElementById('postContent').innerHTML = processedHTML;
+
+
+            } catch (error) {
+                console.error('Lỗi khi fetch nội dung từ IPFS:', error);
+                document.getElementById('postContent').innerHTML = 'Không thể tải nội dung.';
+            }
+        }
+
+        async function updateComment() {
+            try {
+                // Tạo contract instance
+                const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+                // Lấy tokenID từ localStorage
+                const tokenID = localStorage.getItem("tokenID");
+
+                try {
+                    // Gọi hàm getComments từ smart contract
+                    const comments = await contract.methods.getComments(tokenID).call();
+
+                    // Lấy container cho bình luận
+                    const commentsContainer = document.getElementById('commentList');
+                    commentsContainer.innerHTML = '';
+
+
+                    // Lặp qua từng bình luận và thêm vào giao diện
+                    comments.forEach((comment) => {
+                        const commenter = comment.commenter;
+                        const content = comment.content;
+                        const timestamp = new Date(Number(comment.timestamp) * 1000).toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+
+                        // Tạo HTML cho mỗi bình luận
+                        const shortenedAddress = `${comment.commenter.substring(0, 6)}...${comment.commenter.substring(38)}`;
+                        const commentHTML = `
+                        <div class="bg-gray-100 rounded-lg shadow-md p-6 mt-8">
+                            <div class="flex items-center justify-between">
+                                <div class="font-bold text-gray-800">${shortenedAddress}</div>
+                                <div class="text-sm text-gray-500">${timestamp}</div>
+                            </div>
+                            <p class="text-gray-600 mt-2">${content}</p>
+                        </div>
+                    `;
+
+                        // Thêm bình luận vào container
+                        commentsContainer.innerHTML += commentHTML;
+                    });
+                } catch (error) {
+                    console.error("Lỗi khi lấy dữ liệu bình luận:", error);
+                }
+            } catch (error) {
+                console.error("Lỗi khi kết nối MetaMask:", error);
+            }
+        };
+
+        // Gọi hàm để cập nhật bình luận
+
+        document.getElementById("commentForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Ngăn chặn form gửi đi và tải lại trang
+
+            const content = document.getElementById("commentInput").value;
+
+            if (window.ethereum) {
+                try {
+                    // Tạo provider từ MetaMask
+                    const web3 = new Web3(window.ethereum);
+                    // Yêu cầu kết nối tài khoản MetaMask
+                    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                    userAccount = accounts[0];
+                    console.log("Connected account:", userAccount);
+
+
+
+                    // Tạo contract instance
+                    contract = new web3.eth.Contract(contractABI, contractAddress);
+
+                    const gasEstimate = await contract.methods.addComment(localStorage.getItem("tokenID"), content).estimateGas({ from: userAccount });
+
+                    try {
+                        add = await contract.methods.addComment(localStorage.getItem("tokenID"), content).send({
+                            from: accounts[0], // Địa chỉ ví người dùng
+                            gas: gasEstimate // Giới hạn gas (có thể điều chỉnh)
+                        });
+                        console.log("Bình luận đã được thêm:", add);
+
+                        // Sau khi thêm bình luận thành công, cập nhật danh sách bình luận
+                        await updateComment();
+                    } catch (error) {
+                        console.error("Lỗi khi lấy dữ liệu token:", error);
+                    }
+
+                    // Hiển thị nút "Lấy dữ liệu token"
+                } catch (error) {
+                    console.error("Lỗi khi kết nối MetaMask:", error);
+                }
+            } else {
+                console.error("MetaMask không được cài đặt!");
+            }
+        });
+
+        // Xóa giá trị khỏi localStorage khi rời khỏi trang
+
+
+        // Gọi hàm khi trang được tải
+        updateComment()
+        displayPostDetails();
+
+
+        // window.addEventListener("beforeunload", function () {
+        //     localStorage.removeItem("tokenID");
+        //     localStorage.removeItem("cid");
+        //     localStorage.removeItem("title");
+        //     localStorage.removeItem("timestamp");
+        // });
+    </script>
+</body>
+
+</html>

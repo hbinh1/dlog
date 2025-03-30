@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhileCrypto</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            /* Đảm bảo nội dung chính chiếm không gian linh hoạt */
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+
+</head>
+
+<body class="font-sans bg-white">
+    <!-- Header -->
+    <a href="index.html">
+        <header class="">
+            <!-- Banner Section -->
+
+            <div class="w-full md:h-1/2 overflow-hidden flex justify-center bg-gray-400">
+                <img src="https://ipfs.io/ipfs/bafkreih7lli74upjmxgqgpiyputdsr7wrlynwbuoisswfszrkggqzzp33e" alt="Banner"
+                    class="w-3/5 md:w-2/5 h-full" />
+            </div>
+
+        </header>
+    </a>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8 ">
+
+        <article class="bg-gray-100 p-6 rounded-lg">
+            <!-- Tiêu đề bài viết -->
+            <h2 id="postTitle" class="text-4xl font-bold text-gray-800 text-center mb-6">About</h2>
+            <p id="timestamp" class="text-gray-600 text-center"></p>
+
+
+
+            <!-- Nội dung bài viết -->
+            <div id="postContent" class="text-gray-700 leading-relaxed justify-center">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h1 class="text-3xl font-bold text-blue-600 mb-6">Chào mừng đến với blog của tôi!</h1>
+                    <p class="text-gray-700 mb-4">
+                        Tôi là một người đam mê công nghệ blockchain và đã có cơ hội trải nghiệm những 
+                        ứng dụng blockchain trong một khoảng thời gian đáng kể. Với niềm đam mê và sự tò mò không ngừng,
+                        tôi luôn tìm hiểu sâu hơn về thế giới phi tập trung, nơi mà công nghệ blockchain đang dần thay
+                        đổi cách chúng ta tương tác, giao dịch và xây dựng niềm tin.
+                    </p>
+                    <p class="text-gray-700 mb-4">
+                        Hôm nay, tôi muốn chia sẻ lại những kiến thức, kinh nghiệm và góc nhìn của mình về blockchain
+                        thông qua blog này. Từ những khái niệm cơ bản đến các ứng dụng thực tế, tôi hy vọng rằng những
+                        bài viết ở đây sẽ giúp bạn hiểu rõ hơn về tiềm năng to lớn của công nghệ này.
+                    </p>
+                    <h2 class="text-2xl font-bold text-blue-600 mt-6 mb-4">Về blog này:</h2>
+                    <p class="text-gray-700 mb-4">
+                        Đây là một không gian phi tập trung, nơi tôi lưu trữ và chia sẻ những bài viết về blockchain,
+                        tiền điện tử và các công nghệ liên quan. Mỗi bài viết đều được lưu trữ trên IPFS
+                        (InterPlanetary File System) và gắn liền với một token NFT, đảm bảo tính minh bạch.
+                        Tôi tin rằng blockchain không chỉ là công nghệ của tương lai mà còn là công cụ giúp chúng ta xây
+                        dựng một thế giới công bằng và minh bạch hơn.
+                    </p>
+                    <p class="text-gray-700">
+                        Cảm ơn bạn đã ghé thăm blog của tôi! Hãy cùng nhau khám phá và học hỏi những điều thú vị từ thế
+                        giới blockchain nhé.
+                    </p>
+                    <h2 class="text-2xl font-bold text-blue-600 mt-6 mb-4">Không phải lời khuyên tài chính hoặc đầu tư:
+                    </h2>
+                    <p class="text-gray-700 mb-4">
+                        Tất cả thông tin được cung cấp trên blog này chỉ nhằm mục đích tham khảo. Nội dung
+                        không được coi là lời khuyên tài chính, đầu tư, pháp lý hay bất kỳ hình thức tư vấn chuyên
+                        nghiệp nào khác. Trước khi đưa ra bất kỳ quyết định đầu tư nào, bạn nên tự nghiên cứu kỹ lưỡng
+                        và tham khảo ý kiến từ các chuyên gia có chuyên môn.
+                    </p>
+                </div>
+
+            </div>
+        </article>
+        <div class="flex justify-end"> <!-- Thêm div bao bọc và căn phải -->
+            <a href="index.html">
+                <button
+                    class="ml-4 px-4 py-2 bg-gray-50 text-black rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    &larr; Trang chủ
+                </button>
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 shadow">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-600">
+                &copy; 2025 While Crypto. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript để lấy và hiển thị dữ liệu -->
+     <script>
+        console.log(window.MetaMaskSDK?.version);
+     </script>
+
+</body>
+
+</html>

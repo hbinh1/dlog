@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Post</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Add New Post</h1>
+        <form id="addPostForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                    Title
+                </label>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="title" type="text" placeholder="Enter title">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="image">
+                    Image
+                </label>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="image" type="file">
+            </div>
+            <div class="mb-4">
+                <div id="editor">
+
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <button
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit">
+                    Add Post
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+        document.getElementById('addPostForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const image = document.getElementById('image').files[0];
+
+            if (!title || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Here you can handle the form data, e.g., send it to a server
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (image) {
+                formData.append('image', image);
+            }
+
+            // Example: Send form data to a server using Fetch API
+            fetch('/api/posts', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Post added successfully!');
+                    // Optionally, reset the form
+                    document.getElementById('addPostForm').reset();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the post');
+                });
+        });
+    </script>
+</body>
+
+</html>
