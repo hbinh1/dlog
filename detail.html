@@ -300,6 +300,12 @@
 
         // Gọi hàm để cập nhật bình luận
 
+        document.addEventListener('DOMContentLoaded', async function () {
+
+            await updateComment(); // Tự động load comments khi trang tải
+
+        });
+
         document.getElementById("commentForm").addEventListener("submit", async function (event) {
             event.preventDefault(); // Ngăn chặn form gửi đi và tải lại trang
 
