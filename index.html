@@ -100,9 +100,6 @@
     <div id="loader">
         <div class="loader-spinner"></div>
     </div>
-
-
-
 </head>
 
 <body class="font-sans">
@@ -129,12 +126,6 @@
                         About
                     </button>
                 </a>
-                <!-- <a href="addpost.html">
-                    <button
-                        class="items-center ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        Add post
-                    </button>
-                </a> -->
             </div>
         </div>
     </header>
@@ -168,9 +159,11 @@
         let allPosts = [];
         let postsPerPage;
         let currentPage = 1;
+        const CACHE_KEY = 'whilecrypto_posts_cache';
+        const CACHE_EXPIRATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 
         // Địa chỉ và ABI của smart contract
-        const contractAddress = "0x6479e4231ED6d7703D2e0afbeF014dfF92B7890E"; // Thay thế bằng địa chỉ hợp đồng của bạn
+        const contractAddress = "0x6479e4231ED6d7703D2e0afbeF014dfF92B7890E";
         const contractABI = [{
             "inputs": [
                 {
@@ -217,37 +210,69 @@
             ],
             "stateMutability": "view",
             "type": "function"
+        }];
+
+        // Hàm kiểm tra cache có hợp lệ không
+        function isCacheValid(cachedData) {
+            if (!cachedData) return false;
+            if (!cachedData.timestamp) return false;
+            return Date.now() - cachedData.timestamp < CACHE_EXPIRATION;
         }
-        ];
+
+        // Lấy dữ liệu từ cache
+        function getFromCache() {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            if (!cachedData) return null;
+            
+            try {
+                const parsedData = JSON.parse(cachedData);
+                return isCacheValid(parsedData) ? parsedData.data : null;
+            } catch (e) {
+                console.error('Error parsing cache data:', e);
+                return null;
+            }
+        }
+
+        // Lưu dữ liệu vào cache
+        function saveToCache(data) {
+            const cacheData = {
+                data: data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        }
 
         function updatePostsPerPage() {
             if (window.innerWidth >= 1280) { // xl screen
                 postsPerPage = 10;
-                setupPagination();
             } else if (window.innerWidth >= 1024) { // lg screen
                 postsPerPage = 8;
-                setupPagination();
             } else if (window.innerWidth >= 768) { // md screen
                 postsPerPage = 6;
-                setupPagination();
             } else if (window.innerWidth >= 640) { // sm screen
                 postsPerPage = 8;
-                setupPagination();
             } else { // mobile
                 postsPerPage = 6;
-                setupPagination();
             }
+            setupPagination();
         }
 
-
         window.addEventListener('load', async function () {
-            // Load dữ liệu từ blockchain
+            // Thử lấy dữ liệu từ cache trước
+            const cachedPosts = getFromCache();
+            if (cachedPosts) {
+                allPosts = cachedPosts;
+                updatePostsPerPage();
+                displayPosts(currentPage);
+                document.body.classList.add('loaded');
+            }
 
-            await updateUI(); // Hàm load comment của bạn
+            // Luôn cập nhật dữ liệu mới từ blockchain nhưng hiển thị cache trước
+            await updateUI();
+            
             // Ẩn loader sau khi hoàn thành
             document.body.classList.add('loaded');
         });
-
 
         function createPostHTML(cid, title, content, banner, tokenID, timestamp) {
             return `
@@ -269,7 +294,7 @@
                 if (!response.ok) {
                     throw new Error(`Lỗi khi fetch nội dung từ IPFS: ${response.statusText}`);
                 }
-                const data = await response.text(); // Hoặc response.json() nếu nội dung là JSON
+                const data = await response.text();
                 return data;
             } catch (error) {
                 console.error(`Lỗi khi fetch nội dung từ IPFS với CID ${cid}:`, error);
@@ -277,37 +302,43 @@
             }
         }
 
-        // Kết nối với MetaMask
         async function updateUI() {
             const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
-
             contract = new web3.eth.Contract(contractABI, contractAddress);
 
             try {
                 const totalSupply = await contract.methods.totalSupply().call();
                 console.log(totalSupply);
 
-                // Xóa nội dung cũ
-                allPosts = [];
+                const newPosts = [];
+                const promises = [];
 
-                // Lặp qua từng token ID và thêm vào mảng allPosts
+                // Lặp qua từng token ID và thêm vào mảng newPosts
                 for (let i = 0; i < totalSupply; i++) {
-                    // Get all token info at once using getTokenInfo
-                    const tokenInfo = await contract.methods.getTokenInfo(i).call();
+                    promises.push((async () => {
+                        const tokenInfo = await contract.methods.getTokenInfo(i).call();
+                        const tokenID = i;
+                        const title = tokenInfo.title;
+                        const banner = tokenInfo.banner;
+                        const cid = tokenInfo.cid;
+                        const timestamp = new Date(Number(tokenInfo.timestamp) * 1000).toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
 
-                    const tokenID = i;
-                    const title = tokenInfo.title;
-                    const banner = tokenInfo.banner;
-                    const cid = tokenInfo.cid;
-                    const timestamp = new Date(Number(tokenInfo.timestamp) * 1000).toLocaleDateString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                    });
-
-                    const content = fetchContentFromIPFS(cid);
-                    allPosts.push({ cid, title, content, banner, tokenID, timestamp });
+                        newPosts.push({ cid, title, banner, tokenID, timestamp });
+                    })());
                 }
+
+                await Promise.all(promises);
+
+                // Sắp xếp bài viết mới nhất lên đầu (nếu cần)
+                newPosts.sort((a, b) => b.tokenID - a.tokenID);
+
+                // Cập nhật allPosts và lưu vào cache
+                allPosts = newPosts;
+                saveToCache(allPosts);
 
                 // Cập nhật số lượng bài viết hiển thị trên mỗi trang
                 updatePostsPerPage();
@@ -320,7 +351,6 @@
             }
         }
 
-        // Hiển thị bài viết trên trang hiện tại
         function displayPosts(page) {
             const postsContainer = document.querySelector('main');
             postsContainer.innerHTML = '';
@@ -335,7 +365,6 @@
             });
         }
 
-        // Thiết lập phân trang
         function setupPagination() {
             const paginationContainer = document.getElementById('pagination');
             paginationContainer.innerHTML = '';
@@ -354,25 +383,20 @@
             }
         }
 
-        // Thêm sự kiện click cho nút nhấn
-
-
         // Sự kiện tìm kiếm
         document.getElementById('searchInput').addEventListener('input', function () {
             const searchTerm = this.value.trim().toLowerCase();
 
             if (searchTerm === '') {
-                // Nếu không có từ khóa tìm kiếm, hiển thị lại bài viết theo trang hiện tại
                 displayPosts(currentPage);
+                document.getElementById('pagination').style.display = 'flex';
                 return;
             }
 
-            // Lọc bài viết trong allPosts
             const filteredPosts = allPosts.filter(post =>
                 post.title.toLowerCase().includes(searchTerm)
             );
 
-            // Hiển thị kết quả tìm kiếm
             const postsContainer = document.querySelector('main');
             postsContainer.innerHTML = '';
 
@@ -381,30 +405,20 @@
                 postsContainer.innerHTML += postHTML;
             });
 
-            // Ẩn phân trang khi đang tìm kiếm
-            document.getElementById('pagination').display = 'none';
+            document.getElementById('pagination').style.display = 'none';
         });
 
-        // Thêm sự kiện khi xóa hết nội dung tìm kiếm
         document.getElementById('searchInput').addEventListener('change', function () {
             if (this.value.trim() === '') {
-                // Hiển thị lại phân trang
                 document.getElementById('pagination').style.display = 'flex';
-                // Hiển thị lại bài viết theo trang hiện tại
                 displayPosts(currentPage);
             }
         });
 
-        // Cập nhật số lượng bài viết hiển thị khi kích thước màn hình thay đổi
         window.addEventListener('resize', () => {
             updatePostsPerPage();
             displayPosts(currentPage);
         });
-
-    
-
-
     </script>
 </body>
-
 </html>
