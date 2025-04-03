@@ -133,18 +133,18 @@
 
     <!-- Main Content -->
     <main
-        class="h-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 ml-6 mr-6 mb-6">
+        class="h-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mx-auto w-4/5">
         <!-- Các bài viết sẽ được thêm vào đây -->
     </main>
 
     <!-- Pagination -->
-    <div id="pagination" class="flex justify-center mt-6 mb-6">
+    <div id="pagination" class="flex justify-center mt-1 mb-2">
         <!-- Các nút phân trang sẽ được thêm vào đây -->
     </div>
 
     <!-- Footer -->
     <footer class="bg-gray-100 shadow">
-        <div class="container mx-auto px-4 py-6">
+        <div class="container mx-auto px-2 py-2">
             <div class="text-center text-gray-600">
                 &copy; 2025 While Crypto. All rights reserved.
             </div>
@@ -277,9 +277,9 @@
         function createPostHTML(cid, title, content, banner, tokenID, timestamp) {
             return `
                 <a href="detail.html?tokenID=${tokenID}&cid=${encodeURIComponent(cid)}&title=${encodeURIComponent(title)}&timestamp=${encodeURIComponent(timestamp)}">
-                    <div class="bg-gray-200 rounded-lg shadow-md overflow-hidden" style="aspect-ratio: 1/1;">
+                    <div class="bg-gray-200 rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300" style="aspect-ratio: 1/1;">
                         <img src="https://ipfs.io/ipfs/${banner}" alt="Blog Post ${tokenID}" class="h-1/2 w-full object-cover">
-                        <div class="h-1/2 flex flex-col justify-center items-center p-4 md:p-2">
+                        <div class="h-1/2 flex flex-col justify-center items-center p-2 md:p-2">
                             <h2 class="text-sm md:text-xl font-bold text-gray-800 text-center">${title}</h2>
                             <p class="text-sm md:text-lg text-gray-600 text-center">${timestamp}</p>
                         </div>
