@@ -17,6 +17,8 @@
         body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            /* Thay đổi từ height: 100% để có thể mở rộng khi nội dung dài */
         }
 
         .container {
@@ -28,13 +30,9 @@
         main {
             flex: 1;
             overflow-y: auto;
-            /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
             padding: 1rem;
-            /* Thêm padding để nội dung không dính sát vào viền */
             scrollbar-width: none;
-            /* Ẩn thanh cuộn trên Firefox */
             -ms-overflow-style: none;
-            /* Ẩn thanh cuộn trên IE và Edge */
         }
 
         main::-webkit-scrollbar {
@@ -43,21 +41,22 @@
 
         footer {
             margin-top: auto;
+            /* Footer sẽ tự động đẩy xuống dưới */
             flex-shrink: 0;
-            /* Đảm bảo footer không bị co lại */
+            background: white;
+            /* Thêm nền trắng để phân biệt */
         }
 
         #pagination {
-            position: sticky;
-            bottom: 0;
             background: white;
-            /* Nền trắng để phân trang nổi bật */
-            padding: 0 0;
-            /* Thêm padding để phân trang không dính sát vào footer */
-            z-index: 10;
-            /* Đảm bảo phân trang hiển thị trên các phần khác */
+            /* Thêm nền trắng để phân biệt */
+            padding: 1rem 0;
+            /* Thêm padding để đẹp hơn */
+            margin-top: auto;
+            /* Đẩy pagination xuống sát footer */
         }
 
+        /* Phần còn lại giữ nguyên */
         #loader {
             position: fixed;
             top: 0;
@@ -129,18 +128,18 @@
             </div>
         </div>
     </header>
+    <div class="flex-1 flex flex-col">
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mx-auto w-4/5">
+            <!-- Các bài viết sẽ được thêm vào đây -->
+        </main>
 
-
-    <!-- Main Content -->
-    <main
-        class="h-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mx-auto w-4/5">
-        <!-- Các bài viết sẽ được thêm vào đây -->
-    </main>
-
-    <!-- Pagination -->
-    <div id="pagination" class="flex justify-center mt-1 mb-2">
-        <!-- Các nút phân trang sẽ được thêm vào đây -->
+        <!-- Pagination -->
+        <div id="pagination" class="flex justify-center mt-1 mb-2">
+            <!-- Các nút phân trang sẽ được thêm vào đây -->
+        </div>
     </div>
+
 
     <!-- Footer -->
     <footer class="bg-gray-100 shadow">
@@ -223,7 +222,7 @@
         function getFromCache() {
             const cachedData = localStorage.getItem(CACHE_KEY);
             if (!cachedData) return null;
-            
+
             try {
                 const parsedData = JSON.parse(cachedData);
                 return isCacheValid(parsedData) ? parsedData.data : null;
@@ -269,7 +268,7 @@
 
             // Luôn cập nhật dữ liệu mới từ blockchain nhưng hiển thị cache trước
             await updateUI();
-            
+
             // Ẩn loader sau khi hoàn thành
             document.body.classList.add('loaded');
         });
@@ -421,4 +420,5 @@
         });
     </script>
 </body>
+
 </html>
